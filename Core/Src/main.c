@@ -22,7 +22,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "scheduler.h"
+#include "button.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,13 +51,36 @@ TIM_HandleTypeDef htim2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_TIM2_Init(void);
+static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void toggleLedRed(){
+	HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+}
+void toggleLedYellow(){
+	HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+}
+void toggleLedGreen(){
+	HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+}
+void toggleLedBlue(){
+	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+}
+void toggleLedWhite(){
+	HAL_GPIO_TogglePin(LED_WHITE_GPIO_Port, LED_WHITE_Pin);
+}
+void toggleLedPurple(){
+	HAL_GPIO_TogglePin(LED_PURPLE_GPIO_Port, LED_PURPLE_Pin);
+}
 
+// write to uart for debugging as well as print time stamp
+void writeMessage(char * str){
+	HAL_UART_Transmit(&huart1 , (void *)str, strlen(str), 10);
+}
 /* USER CODE END 0 */
 
 /**
@@ -86,12 +111,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_TIM2_Init();
-  SCH_Init();
-  SCH_Add_Task(led1test, 0, 50);
-  SCH_Add_Task(led2test, 0, 100);
-  SCH_Add_Task(led3test, 0, 150);
-  SCH_Add_Task(led4test, 0, 200);
-  SCH_Add_Task(led5test, 250, 0);
+  MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -101,7 +121,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  SCH_Dispatch_Tasks();
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -187,16 +207,46 @@ static void MX_TIM2_Init(void)
 
 }
 
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, LED_RED_Pin|LED_YELLOW_Pin|LED_GREEN_Pin|LED_BLUE_Pin
+                          |LED_WHITE_Pin|LED_PURPLE_Pin|TX_Pin|RX_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : LED_RED_Pin LED_YELLOW_Pin LED_GREEN_Pin LED_BLUE_Pin
+                           LED_WHITE_Pin LED_PURPLE_Pin TX_Pin RX_Pin */
+  GPIO_InitStruct.Pin = LED_RED_Pin|LED_YELLOW_Pin|LED_GREEN_Pin|LED_BLUE_Pin
+                          |LED_WHITE_Pin|LED_PURPLE_Pin|TX_Pin|RX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Button_Pin */
+  GPIO_InitStruct.Pin = Button_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Button_GPIO_Port, &GPIO_InitStruct);
+
+}
+
 /* USER CODE BEGIN 4 */
-char str[20];
-int counter = 10;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	counter--;
-	if(counter <= 0){
-		counter = 10;
-		HAL_UART_Transmit(&huart2, str, sprintf(str, "Task %d is execute\r\n", status), 1000);
-	}
-	SCH_Update();
+	schedulerUpdate();
+#ifndef scheduling_button
+	button_reading();
+#endif
 }
 /* USER CODE END 4 */
 
