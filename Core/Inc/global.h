@@ -24,7 +24,7 @@
 //#include "usart.h"
 
 //End global include section
-extern UART_HandleTypeDef huart1;
+//extern UART_HandleTypeDef huart1;
 
 //Begin global variable section
 extern uint32_t timestamp;

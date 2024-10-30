@@ -16,7 +16,7 @@
 
 TaskList_t TaskList;
 uint32_t TaskIDCounter = 0; // we using ID as invalid ID
-
+uint32_t timestamp = 0;
 ERROR_CODE ErrorCode = NO_ERROR;
 ERROR_CODE LastErrorCode = NO_ERROR;
 

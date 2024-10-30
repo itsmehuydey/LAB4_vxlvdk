@@ -72,10 +72,6 @@ void Error_Handler(void);
 #define Button_GPIO_Port GPIOB
 #define LED_PURPLE_Pin GPIO_PIN_8
 #define LED_PURPLE_GPIO_Port GPIOA
-#define TX_Pin GPIO_PIN_9
-#define TX_GPIO_Port GPIOA
-#define RX_Pin GPIO_PIN_10
-#define RX_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
