@@ -176,7 +176,6 @@ void schedulerReportStatus(){
 
 
 #ifdef WATCHDOG
-//watchdog section
 IWDG_HandleTypeDef hiwdg ;
 static uint32_t counterForWatchdog = 0;
 void MX_IWDG_Init(){
