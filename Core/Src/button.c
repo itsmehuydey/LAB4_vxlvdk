@@ -13,29 +13,18 @@ int TimeOutForKeyDoublePress[NO_OF_BUTTONS];
 
 int buttonFlags[NO_OF_BUTTONS];
 
-// we define 4-stage buffers for debouncing
+
 static GPIO_PinState debounceButtonBuffer1[NO_OF_BUTTONS];
 static GPIO_PinState debounceButtonBuffer2[NO_OF_BUTTONS];
 static GPIO_PinState debounceButtonBuffer3[NO_OF_BUTTONS];
 static GPIO_PinState debounceButtonBuffer4[NO_OF_BUTTONS];
 
-// we define a flag for a button pressed more than 1 second .
+
 static uint8_t flagForButtonPress1s[NO_OF_BUTTONS];
-
-// we define a buffer to store the state of button
-// for double press detection
-//static uint8_t buttonWaitDoublePress[NO_OF_BUTTONS];
-
-// we define a flag for a button is double pressed
-//static uint8_t flagForButtonDoublePressed[NO_OF_BUTTONS];
-
-// we define counter for automatically increasing the value
-// after the button is pressed more than 1 second .
 static uint16_t counterForButtonPress1s[NO_OF_BUTTONS];
 
-//user definition input port and input pin
+
 #define INPUT_PORT GPIOB
-//uint16_t buttonPin[NO_OF_BUTTONS] = {0x0001};
 
 
 void initButton(){

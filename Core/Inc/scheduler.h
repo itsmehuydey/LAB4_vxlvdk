@@ -15,25 +15,26 @@
 
 //Begin Define Section
 #define SCH_MAX_TASKS  32
+#define NO_TASK_ID 0
 //End Define Section
 
 //Type Definition Declaration
 //=================================================================
 
 
-struct TaskControlBlock_t {
+struct Node {
 	void (*TaskPointer)();
     uint32_t 				TaskID;
     uint32_t 				Delay;
     uint32_t 				Period;
-//    uint32_t 				Runme;
-    struct TaskControlBlock_t * 	NextTask;
+    uint32_t 				Runme;
+    struct Node * 	NextTask;
 };
 
-typedef struct TaskControlBlock_t TaskControlBlock_t;
+typedef struct Node Node;
 
 typedef struct {
-    TaskControlBlock_t * head;
+    Node * head;
     int size;
 } TaskList_t;
 
