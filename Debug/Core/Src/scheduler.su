@@ -5,5 +5,5 @@ scheduler.c:82:13:schedulerDeleteTask	24	static
 scheduler.c:91:5:addTask	32	static
 scheduler.c:120:15:schedulerAddTask	32	static
 scheduler.c:131:6:schedulerSleep	4	static,ignoring_inline_asm
-scheduler.c:135:6:schedulerDispatcher	16	static
-scheduler.c:153:6:schedulerReportStatus	4	static
+scheduler.c:136:6:schedulerDispatcher	16	static
+scheduler.c:154:6:schedulerReportStatus	4	static

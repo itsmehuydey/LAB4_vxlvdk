@@ -1474,7 +1474,8 @@ unsigned char schedulerAddTask(void (*functionPointer)(), unsigned int DELAY, un
 void schedulerSleep(){
  8000954:	b480      	push	{r7}
  8000956:	af00      	add	r7, sp, #0
-	__WFI();
+	// Enter idle or low-power mode
+	    __WFI();  // Wait For Interrupt: puts the MCU in idle mode until an interrupt occurs
  8000958:	bf30      	wfi
 }
  800095a:	bf00      	nop
