@@ -25,7 +25,7 @@
 #include "scheduler.h"
 #include "button.h"
 #include "string.h"
-
+#include "global.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,24 +62,24 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void toggleLedRed(){
-	HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-}
-void toggleLedYellow(){
-	HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
-}
-void toggleLedGreen(){
-	HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
-}
-void toggleLedBlue(){
-	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
-}
-void toggleLedWhite(){
-	HAL_GPIO_TogglePin(LED_WHITE_GPIO_Port, LED_WHITE_Pin);
-}
-void toggleLedPurple(){
-	HAL_GPIO_TogglePin(LED_PURPLE_GPIO_Port, LED_PURPLE_Pin);
-}
+//void toggleLedRed(){
+//	HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+//}
+//void toggleLedYellow(){
+//	HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+//}
+//void toggleLedGreen(){
+//	HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+//}
+//void toggleLedBlue(){
+//	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+//}
+//void toggleLedWhite(){
+//	HAL_GPIO_TogglePin(LED_WHITE_GPIO_Port, LED_WHITE_Pin);
+//}
+//void toggleLedPurple(){
+//	HAL_GPIO_TogglePin(LED_PURPLE_GPIO_Port, LED_PURPLE_Pin);
+//}
 
 // write to uart for debugging as well as print time stamp
 void writeMessage(char * str){
@@ -121,18 +121,16 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2);
     schedulerInit();
 
-    //add button control task
-  #ifdef scheduling_button
-    schedulerAddTask(initButton, 0, 0); // one shot task
-    schedulerAddTask(button_reading, 5, 1); // scan button every 10 ms
-  #else
-    initButton();
-  #endif
-    schedulerAddTask(toggleLedRed, 50, 50); // 50 * 10 ms = 500 ms second period
-    schedulerAddTask(toggleLedYellow, 51, 100); // 1 second period task
-    schedulerAddTask(toggleLedGreen, 52, 150);	// 1.5 second period task
-    schedulerAddTask(toggleLedBlue, 53, 200); // 2 second period task
-    schedulerAddTask(toggleLedWhite, 54, 250); // 2.5 second period task
+
+//    schedulerAddTask(toggleLedRed, 50, 50); // 50 * 10 ms = 500 ms second period
+//    schedulerAddTask(toggleLedYellow, 51, 100); // 1 second period task
+//    schedulerAddTask(toggleLedGreen, 52, 150);	// 1.5 second period task
+//    schedulerAddTask(toggleLedBlue, 53, 200); // 2 second period task
+//    schedulerAddTask(toggleLedWhite, 54, 250); // 2.5 second period task
+    	schedulerAddTask(fsm_manual, 50, 1);      // 50 * 10 ms = 500 ms period
+        schedulerAddTask(fsm_setting, 50, 1);     // 1 second period task
+        schedulerAddTask(fsm_automatic, 50, 1);   // 1.5 second period task
+        schedulerAddTask(getKeyInput, 55, 1); // scan button every 10 ms
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -142,9 +140,6 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	  schedulerDispatcher();
-	  if(isButtonPressed(0)){
-		  schedulerAddTask(toggleLedPurple, 0, 0);
-	  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -277,32 +272,52 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LED_RED_Pin|LED_YELLOW_Pin|LED_GREEN_Pin|LED_BLUE_Pin
-                          |LED_WHITE_Pin|LED_PURPLE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4
+                          |GPIO_PIN_5|GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13
+                          |GPIO_PIN_14, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LED_RED_Pin LED_YELLOW_Pin LED_GREEN_Pin LED_BLUE_Pin
-                           LED_WHITE_Pin LED_PURPLE_Pin */
-  GPIO_InitStruct.Pin = LED_RED_Pin|LED_YELLOW_Pin|LED_GREEN_Pin|LED_BLUE_Pin
-                          |LED_WHITE_Pin|LED_PURPLE_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10
+                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7
+                          |GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PA1 PA2 PA3 PA4
+                           PA5 PA11 PA12 PA13
+                           PA14 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4
+                          |GPIO_PIN_5|GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13
+                          |GPIO_PIN_14;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Button_Pin */
-  GPIO_InitStruct.Pin = Button_Pin;
+  /*Configure GPIO pins : PA6 PA7 PA8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(Button_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB0 PB1 PB2 PB10
+                           PB11 PB12 PB13 PB3
+                           PB4 PB5 PB6 PB7
+                           PB8 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10
+                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7
+                          |GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	schedulerUpdate();
-#ifndef scheduling_button
-	button_reading();
-#endif
+	getKeyInput();
 }
 
 /* USER CODE END 4 */

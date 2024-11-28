@@ -1,187 +1,169 @@
-/*
- * button.c
- *
- *  Created on: Oct 30, 2024
- *      Author: pc
- */
-
+//#include "global.h"
+//
+//
+//uint16_t pinBuffer[NUM_OF_BUTTONS];
+//int postState[NUM_OF_BUTTONS]={1,1,1};//2 //000
+//int preState[NUM_OF_BUTTONS]={1,1,1};//0 //000
+//int currentState[NUM_OF_BUTTONS]={1,1,1};//1
+//int buttonState [NUM_OF_BUTTONS]={1,1,1};
+//int buttonCounter[NUM_OF_BUTTONS]={0,0,0};
+//int button[NUM_OF_BUTTONS]={1,1,1};
+//int flag_reset = 0;
+//int flag_set = 0;
+//int flag_change = 0;
+//int flag_settime_mode = 0;
+//int flag_holding = 0;
+//int number_settime = 0;
+//int mode = 0;
+//
+//uint8_t debounceCounter[NUM_OF_BUTTONS] = {0};
+////GPIO_PinState postState[NUM_OF_BUTTONS];//2
+////GPIO_PinState preState[NUM_OF_BUTTONS];//0
+////GPIO_PinState currentState[NUM_OF_BUTTONS];//1
+//void readButton(void) {
+//    for (int i = 0; i < NUM_OF_BUTTONS; i++) {
+//    	postState[i] = currentState[i];
+//    	currentState[i] = preState[i];
+//    	preState[i] = HAL_GPIO_ReadPin(portBuffer[i], pinBuffer[i]);
+//        if((currentState[i] == postState[i])&&(currentState[i] == preState[i])){
+//        	if (postState[i]!=buttonState[i])
+//        		buttonState[i]=postState[i];
+//        }
+//                switch (button[i]) {
+//                    case RELEASED:
+//                    	button[i] = buttonState[i];
+//                        break;
+//                    case PRESSED:
+//                        if (button[i] == PRESSED) {
+//                            if (i == 0 && buttonCounter[0] == 0) {
+//                                flag_reset = 1;
+//                            } else if (i == 1 && buttonCounter[1] == 0) {
+//                            	flag_settime_mode = 1;
+//                            } else if (i == 2 && buttonCounter[2] == 0) {
+//                                flag_set = 1;
+//                            }
+//                            if (buttonCounter[i] <= HOLDED) {
+//                                buttonCounter[i]++;
+//                            } else {
+//                                buttonCounter[i] = 0;
+//                                button[i] = INCREASE;
+//                            }
+//                        } else {
+//                            buttonCounter[i] = 0;
+//                            button[i] = RELEASED;
+//                        }
+//                        break;
+//                    case INCREASE:
+//                        if (buttonState[1] == PRESSED) {
+//                            handleIncrease(i);
+//                        } else {
+//                            buttonCounter[i] = 0;
+//                            button[i] = RELEASED;
+//                        }
+//                        break;
+//
+//                    default:
+//                        break;
+//                }
+//            }
+//    }
+//
+//int getButton(int index){
+//	if(index >= NUM_OF_BUTTONS) return -1;
+//	else return button[index];
+//}
+//
+//
+//
+//
+////void setFlags_HandleActions() {
+////		if (flag_reset == 1) {
+////		        reset();         // Perform the reset action
+////		        mode++;          // Update the mode
+////		        if (mode > 4) {
+////		            mode = 1;
+////		            retime();
+////		        }
+////		        number_settime = 0;
+////		        flag_reset = 0;  // Reset the flag
+////		    }
+////}
+//
+//void handleIncrease(int i) {
+//    if (buttonCounter[i] % 10 == 0) {
+//        number_settime++;
+//        if (number_settime > 99) number_settime = 0;
+//    }
+//    buttonCounter[i]++;
+//}
+//
 
 #include "button.h"
 
-int TimeOutForKeyPress;
-int TimeOutForKeyDoublePress[NO_OF_BUTTONS];
+int KeyReg0[N0_OF_BUTTONS] = {NORMAL_STATE};
+int KeyReg1[N0_OF_BUTTONS] = {NORMAL_STATE};
+int KeyReg2[N0_OF_BUTTONS] = {NORMAL_STATE};
+int KeyReg3[N0_OF_BUTTONS] = {NORMAL_STATE};
 
-int buttonFlags[NO_OF_BUTTONS];
+int TimeOutForKeyPress = 500;
+int button_flag[N0_OF_BUTTONS] = {0};
+int button_long_pressed[N0_OF_BUTTONS] = {0};
 
+int isButtonPressed(int index){
+	if(button_flag[index] == 1)
+		return 1;
+	return 0;
+}
 
-static GPIO_PinState debounceButtonBuffer1[NO_OF_BUTTONS];
-static GPIO_PinState debounceButtonBuffer2[NO_OF_BUTTONS];
-static GPIO_PinState debounceButtonBuffer3[NO_OF_BUTTONS];
-static GPIO_PinState debounceButtonBuffer4[NO_OF_BUTTONS];
+int isButtonLongPressed(int index){
+	if(button_long_pressed[index] == 1)
+		return 1;
+	return 0;
+}
 
+void getKeyInput(){
+	static int longPressCounter[N0_OF_BUTTONS] = {0};
+	for(int i = 0; i < N0_OF_BUTTONS; i++){
+		KeyReg2[i] = KeyReg1[i];
+		KeyReg1[i] = KeyReg0[i];
+	}
+	KeyReg0[0] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6);
+	KeyReg0[1] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7);
+	KeyReg0[2] = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8);
 
-static uint8_t flagForButtonPress1s[NO_OF_BUTTONS];
-static uint16_t counterForButtonPress1s[NO_OF_BUTTONS];
+	for(int i = 0; i < N0_OF_BUTTONS; i++){
+		if((KeyReg1[i] == KeyReg0[i]) && (KeyReg2[i] == KeyReg1[i])){
+			if(KeyReg2[i] != KeyReg3[i]){
+				KeyReg3[i] = KeyReg2[i];
 
+				if(KeyReg3[i] == PRESSED_STATE){
+					TimeOutForKeyPress = 500;
+					button_flag[i] = 1;
+				}
+			}
+			else{
+				TimeOutForKeyPress--;
+				if(TimeOutForKeyPress == 0){
+					TimeOutForKeyPress = 500;
 
-#define INPUT_PORT GPIOB
-
-
-void initButton(){
-	//clear all buffers, counters and flags
-	for(unsigned char i = 0; i < NO_OF_BUTTONS; i++){
-		debounceButtonBuffer1[i] 		= BUTTON_IS_RELEASED;	//buffer level 1
-		debounceButtonBuffer2[i] 		= BUTTON_IS_RELEASED;	//buffer level 2
-		debounceButtonBuffer3[i] 		= BUTTON_IS_RELEASED;	//buffer level 3
-		debounceButtonBuffer4[i] 		= BUTTON_IS_RELEASED;	//buffer level 4
-		buttonFlags[i] 					= BUTTON_FLAG_CLEAR;	//button pressed flag
-		flagForButtonPress1s[i] 		= BUTTON_FLAG_CLEAR;	//button hold flag
-//		flagForButtonDoublePressed[i] 	= BUTTON_FLAG_CLEAR;	//button double pressed flag
-//		TimeOutForKeyDoublePress[i]     = DOUBLE_PRESS_TIMEOUT;	//time interval double pressed
-//		TimeOutForKeyPress[i]           = KEY_HOLD_TIMEOUT;
-//		buttonWaitDoublePress[i]        = 0;					//button state wait for double pressed detection
-		counterForButtonPress1s[i] 		= 0;					//counter for button hold detection
+					if(KeyReg3[i] == PRESSED_STATE){
+						button_flag[i] = 1;
+					}
+					//else release
+				}
+			}
+			if(KeyReg3[i] == PRESSED_STATE){
+			  	longPressCounter[i]++;
+			  	if(longPressCounter[i] >= 200){
+			  		button_flag[i] = 1;
+			  		longPressCounter[i] = 190;
+			  	}
+			}
+			else {
+				longPressCounter[i] = 0;
+			}
+		}
 	}
 }
 
-void button_reading (void) {
-	//checking for button pressed, hold more than 1 second and double pressed
-	for(unsigned char i = 0; i < NO_OF_BUTTONS; i++){
-		//propagate buffer stage 2 to stage 3
-		debounceButtonBuffer3[i] = debounceButtonBuffer2[i];
 
-		//propagate buffer stage 1 to stage 2
-		debounceButtonBuffer2[i] = debounceButtonBuffer1[i];
-
-		//update the lasted button state in buffer 1
-		debounceButtonBuffer1[i] = HAL_GPIO_ReadPin(Button_GPIO_Port, Button_Pin);
-
-		//if the button state hold straight for around 40ms
-		if((debounceButtonBuffer2[i] == debounceButtonBuffer1[i]) && (debounceButtonBuffer2[i] == debounceButtonBuffer3[i]))
-		{
-			//check for update buffer level 4
-			if(debounceButtonBuffer3[i] != debounceButtonBuffer4[i])
-			{
-#ifdef RISING_EDGE
-				/* Button trigger on rising edge section */
-				if(debounceButtonBuffer3[i] == BUTTON_IS_RELEASED)
-				{
-					//buffer level 3 == button release, buffer level 4 == button Pressed, that mean LOW transistion
-					//currently we need to wait 340 ms for button pressed to register because we need to check for button hold and double press
-					if(counterForButtonPress1s[i] < DURATION_FOR_AUTO_INCREASING)
-					{
-						buttonFlags[i] = BUTTON_FLAG_SET;
-					}
-
-					//decide button state upon release
-					if(buttonWaitDoublePress[i] == 0)
-					{
-						//start count down for double pressed
-						TimeOutForKeyDoublePress[i] = DOUBLE_PRESS_TIMEOUT;
-						buttonWaitDoublePress[i] = 1;
-					} else {
-						//if we get here again, mean that the key is double pressed in time
-						//reset the button state and set the double pressed flag
-						flagForButtonDoublePressed[i] = BUTTON_FLAG_SET;
-						//clear buttonFlags, if it's set
-						buttonFlags[i] = BUTTON_FLAG_CLEAR;
-						//reset button wait state and button wait double press timeout
-						buttonWaitDoublePress[i] = 0;
-						TimeOutForKeyDoublePress[i] = 0;
-						//clear counter for hold event to prevent unexpected hold button
-						counterForButtonPress1s[i] = 0; //counting from 0 after double pressed for button hold event
-					}
-				}
-#endif
-				debounceButtonBuffer4[i] = debounceButtonBuffer3[i];
-				if(debounceButtonBuffer4[i] == BUTTON_IS_PRESSED){
-					/* Button trigger on */
-					//set button press flags
-					buttonFlags[i] = BUTTON_FLAG_SET;
-					//ste the first hold time out for button hold flags
-					counterForButtonPress1s[i] = BUTTON_HOLD_TIMEOUT;
-
-				}
-				else {
-					//button buffer level 4 update state to button release
-					//clear the counter and button hold flags
-					counterForButtonPress1s[i] = 0;
-					flagForButtonPress1s[i] = BUTTON_FLAG_CLEAR;
-				}
-			} else if(debounceButtonBuffer4[i] == BUTTON_IS_PRESSED){
-				//buffer level 3 == buffer level 4 == BUTTON PRESSED
-
-				//if button is still hold, increase counter
-				counterForButtonPress1s[i]--;
-				//if counter reach hold threshold, set hold 1s flag and continue counting
-				//the counter only reset to 0 when the button is release;
-				if (counterForButtonPress1s[i] == 0){
-					flagForButtonPress1s[i] = BUTTON_FLAG_SET;
-					counterForButtonPress1s[i] = AUTO_REPEAT_RATE;
-					//with BUTTON HOLD TIMEOUT and AUTO REPEAT RATE,
-					//button hold flags is raise after the first 3 second holding button and every 1 second later
-				}
-
-				//the release button if the button is hold more than 5 seconds
-				//optional feature
-//				TimeOutForKeyPress[i]--;
-//				if(TimeOutForKeyPress[i] == 0){
-//					debounceButtonBuffer4[i] = BUTTON_IS_RELEASED;
-//				}
-			}
-			//if we get here mean that buffer level 3 and buffer level 4 is the same but their state are button release
-			//do nothing
-		}
-#ifdef DOUBLE_PRESS
-		//count down, wait for double press event
-		if(buttonWaitDoublePress[i] == 1)
-		{
-			TimeOutForKeyDoublePress[i]--;
-			if(TimeOutForKeyDoublePress[i] == 0)
-			{
-				buttonWaitDoublePress[i] = 0;
-				//button double press timeout, only set button pressed flags
-				//one option is to set button pressed flag here, but we can't distinguish
-				//between button pressed and button hold, so the button hold will the the failed trigger button pressed
-			}
-		}
-#endif
-	}
-}
-
-unsigned char isButtonPressed(unsigned char index){
-	if(index >= NO_OF_BUTTONS) return 0;
-#ifdef DOUBLE_PRESS
-	if(buttonFlags[index] == BUTTON_FLAG_SET && buttonWaitDoublePress[index] == 0){
-		//clear button flags and return
-		buttonFlags[index] = BUTTON_FLAG_CLEAR;
-		return 1;
-	} else return 0;
-#else
-	if(buttonFlags[index] == BUTTON_FLAG_SET){
-		//clear button flags and return
-		buttonFlags[index] = BUTTON_FLAG_CLEAR;
-		return 1;
-	} else return 0;
-#endif
-}
-
-unsigned char isButtonPressed3s(unsigned char index){
-	if(index >= NO_OF_BUTTONS) return 0;
-	if(flagForButtonPress1s[index] == BUTTON_FLAG_SET){
-		//clear button hold more than 3s flags and return
-		flagForButtonPress1s[index] = BUTTON_FLAG_CLEAR;
-		return 1;
-	} else return 0;
-}
-
-#ifdef DOUBLE_PRESS
-unsigned char isButtonDoublePressed(unsigned char index){
-	if(index >= NO_OF_BUTTONS) return 0;
-	if(flagForButtonDoublePressed[index] == BUTTON_FLAG_SET){
-		//clear double press flag and return
-		flagForButtonDoublePressed[index] = BUTTON_FLAG_CLEAR;
-		return 1;
-	} else return 0;
-}
-#endif

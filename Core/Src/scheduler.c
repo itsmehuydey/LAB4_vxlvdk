@@ -31,9 +31,28 @@ void schedulerInit() {
     LastErrorCode = NO_ERROR;  // Clear last error code
 }
 
-void schedulerUpdate(){
-	timestamp+=10;
-	if(TaskList.size && TaskList.head -> Delay > 0) TaskList.head -> Delay--;
+void schedulerUpdate() {
+    timestamp += 10; // Cập nhật tổng thời gian
+    Node *current = TaskList.head;
+
+    // Duyệt qua danh sách các tác vụ
+    while (current != NULL) {
+        if (current->Delay > 0) {
+            current->Delay--; // Giảm thời gian chờ
+        }
+
+        if (current->Delay == 0) {
+            current->RunMe++; // Đánh dấu sẵn sàng thực thi
+
+            // Lên lịch lại nếu là tác vụ định kỳ
+            if (current->Period > 0) {
+                current->Delay = current->Period;
+            }
+        }
+
+        // Tiếp tục duyệt sang tác vụ kế tiếp
+        current = current->NextTask;
+    }
 }
 
 
@@ -88,34 +107,40 @@ RETURN_CODE schedulerDeleteTask(const unsigned char TaskID){
 	return returnCode;
 }
 
-int addTask(Node * task){
-    if(TaskList.size >= SCH_MAX_TASKS)
-        return 1;
-    if(TaskList.size == 0){
-        TaskList.head = task;
-        TaskList.size++;
-        return 0;
+int addTask(Node *task) {
+    if (TaskList.size >= SCH_MAX_TASKS) {
+        return 1; // Quá số lượng tác vụ cho phép
     }
 
-    Node * curr = TaskList.head;
-    Node * prev = NULL;
-    int found = 0;
-    while(!found){
-        if(curr != NULL && task-> Delay >= curr-> Delay){
-            task -> Delay -= curr -> Delay;
+    task->RunMe = 0; // Đảm bảo cờ được đặt về 0
+    if (TaskList.size == 0) {
+        TaskList.head = task;
+    } else {
+        Node *curr = TaskList.head;
+        Node *prev = NULL;
+
+        while (curr && task->Delay >= curr->Delay) {
+            task->Delay -= curr->Delay;
             prev = curr;
-            curr = curr -> NextTask;
+            curr = curr->NextTask;
+        }
+
+        task->NextTask = curr;
+        if (prev) {
+            prev->NextTask = task;
         } else {
-            task -> NextTask = curr;
-            if(prev != NULL) prev -> NextTask = task;
-            else TaskList.head = task;
-            if(curr != NULL) curr -> Delay -= task -> Delay;
-            TaskList.size++;
-            found = 1;
+            TaskList.head = task;
+        }
+
+        if (curr) {
+            curr->Delay -= task->Delay;
         }
     }
+
+    TaskList.size++;
     return 0;
 }
+
 
 unsigned char schedulerAddTask(void (*functionPointer)(), unsigned int DELAY, unsigned int PERIOD){
 	Node * task = (Node *)malloc(sizeof(Node));
@@ -124,6 +149,7 @@ unsigned char schedulerAddTask(void (*functionPointer)(), unsigned int DELAY, un
 	task -> TaskID 		= (++TaskIDCounter)%256;
 	task -> TaskPointer = functionPointer;
 	task -> NextTask 	= NULL;
+	task -> RunMe 		= 0;
 	addTask(task);
 	return task -> TaskID;
 }
@@ -133,22 +159,39 @@ void schedulerSleep(){
 	    __WFI();  // Wait For Interrupt: puts the MCU in idle mode until an interrupt occurs
 }
 
-void schedulerDispatcher(){
-	while(TaskList.size != 0 &&TaskList.head -> Delay == 0){
-		// report timeout task
-		uint32_t time_point = timestamp;
-		sprintf(str, "TaskID: %ld timeout at timestamp: %ld ms\r\n", TaskList.head -> TaskID, time_point);
-		writeMessage(str);
-		// execute all task timed out
-		(*TaskList.head -> TaskPointer)();
-		// add the task back to task list if the task is periodic
-		if(TaskList.head -> Period) schedulerAddTask(TaskList.head -> TaskPointer, TaskList.head -> Period, TaskList.head -> Period);
-		// delete complete task
-		schedulerDeleteTask(TaskList.head -> TaskID);
-	}
-	schedulerReportStatus();
-	schedulerSleep();
+void schedulerDispatcher() {
+    while (TaskList.size != 0) {
+        Node *current = TaskList.head;
+
+        // Duyệt qua tất cả các tác vụ
+        while (current != NULL) {
+            if (current->RunMe > 0) {
+                current->RunMe--; // Đánh dấu là đã thực thi
+
+                // Báo cáo và thực thi tác vụ
+                uint32_t time_point = timestamp;
+                sprintf(str, "TaskID: %ld timeout at timestamp: %ld ms\r\n", current->TaskID, time_point);
+                writeMessage(str);
+
+                // Thực thi tác vụ
+                current->TaskPointer();
+
+                // Nếu là tác vụ định kỳ, không xóa
+                if (current->Period == 0) {
+                    schedulerDeleteTask(current->TaskID);
+                }
+            }
+
+            // Tiếp tục với tác vụ kế tiếp
+            current = current->NextTask;
+        }
+
+        schedulerSleep(); // Đưa hệ thống về chế độ tiết kiệm năng lượng
+    }
+
+    schedulerReportStatus();
 }
+
 
 int ErrorTickCount = 0;
 void schedulerReportStatus(){
@@ -199,5 +242,7 @@ void resetWatchdogCounting(){
 	counterForWatchdog = 0;
 }
 #endif
+
+
 
 #endif /* SRC_SCHEDULER_C_ */
