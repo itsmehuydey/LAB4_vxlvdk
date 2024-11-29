@@ -23,6 +23,9 @@ ERROR_CODE LastErrorCode = NO_ERROR;
 char str[50];
 
 void schedulerInit() {
+//    while (TaskList.head != NULL) {
+//        deleteTask(TaskList.head->TaskID); // Xóa tác vụ đầu tiên trong danh sách
+//    }
     TaskList.head = NULL;	//Node head = 0;
     TaskList.size = 0;        //Asign size = 0
     TaskIDCounter = 0;        // Reset task ID counter
@@ -32,7 +35,7 @@ void schedulerInit() {
 }
 
 void schedulerUpdate() {
-    timestamp += 10; // Cập nhật tổng thời gian
+    //timestamp += 10; // Cập nhật tổng thời gian
     Node *current = TaskList.head;
 
     // Duyệt qua danh sách các tác vụ
@@ -54,6 +57,7 @@ void schedulerUpdate() {
         current = current->NextTask;
     }
 }
+
 
 
 int deleteTask(uint32_t ID){
@@ -169,9 +173,9 @@ void schedulerDispatcher() {
                 current->RunMe--; // Đánh dấu là đã thực thi
 
                 // Báo cáo và thực thi tác vụ
-                uint32_t time_point = timestamp;
-                sprintf(str, "TaskID: %ld timeout at timestamp: %ld ms\r\n", current->TaskID, time_point);
-                writeMessage(str);
+//                uint32_t time_point = timestamp;
+//                sprintf(str, "TaskID: %ld timeout at timestamp: %ld ms\r\n", current->TaskID, time_point);
+//                writeMessage(str);
 
                 // Thực thi tác vụ
                 current->TaskPointer();

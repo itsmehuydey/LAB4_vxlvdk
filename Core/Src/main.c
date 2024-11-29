@@ -129,9 +129,8 @@ int main(void)
 //    schedulerAddTask(toggleLedWhite, 54, 250); // 2.5 second period task
 
     	schedulerAddTask(fsm_manual, 50, 1);      // 50 * 10 ms = 500 ms period
-        schedulerAddTask(fsm_setting, 51, 1);     // 1 second period task
-        schedulerAddTask(fsm_automatic, 52, 1);   // 1.5 second period task
-        //schedulerAddTask(getKeyInput, 53, 10); // scan button every 10 ms
+        schedulerAddTask(fsm_setting, 50, 1);     // 1 second period task
+        schedulerAddTask(fsm_automatic, 50, 1);   // 1.5 second period task
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -141,9 +140,6 @@ int main(void)
   {
     /* USER CODE END WHILE */
   schedulerDispatcher();
-//  fsm_automatic();
-//  fsm_manual();
-//  fsm_setting();
       }
   /* USER CODE END 3 */
 }
