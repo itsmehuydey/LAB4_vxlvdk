@@ -4,5 +4,5 @@ traffic_light.c:18:6:led_red_amber	8	static
 traffic_light.c:22:6:led_green_red	8	static
 traffic_light.c:26:6:led_amber_red	8	static
 traffic_light.c:30:6:init_traffic_light	8	static
-traffic_light.c:39:6:controlTime_led	4	static
-traffic_light.c:47:6:blinkingLed	16	static
+traffic_light.c:37:6:controlTime_led	4	static
+traffic_light.c:45:6:blinkingLed	16	static

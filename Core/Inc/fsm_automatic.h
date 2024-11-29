@@ -4,6 +4,7 @@
 #include "main.h"
 #include "global.h"
 #include "traffic_light.h"
+#include "timer.h"
 #include "display7seg.h"
 #include "button.h"
 

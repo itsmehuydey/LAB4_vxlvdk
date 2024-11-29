@@ -4,7 +4,7 @@
 #include "fsm_manual.h"
 #include "fsm_setting.h"
 #include "fsm_automatic.h"
-
+#include "timer.h"
 #include "button.h"
 #include "display7seg.h"
 #define MODE_1	1	//NORMAL

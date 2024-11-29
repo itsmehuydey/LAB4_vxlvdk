@@ -26,6 +26,7 @@
 #include "button.h"
 #include "string.h"
 #include "global.h"
+#include "display7seg.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,9 +63,9 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//void toggleLedRed(){
-//	HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-//}
+void toggleLedRed(){
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+}
 //void toggleLedYellow(){
 //	HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
 //}
@@ -121,16 +122,16 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2);
     schedulerInit();
 
-
-//    schedulerAddTask(toggleLedRed, 50, 50); // 50 * 10 ms = 500 ms second period
+    //schedulerAddTask(toggleLedRed, 50, 50); // 50 * 10 ms = 500 ms second period
 //    schedulerAddTask(toggleLedYellow, 51, 100); // 1 second period task
 //    schedulerAddTask(toggleLedGreen, 52, 150);	// 1.5 second period task
-//    schedulerAddTask(toggleLedBlue, 53, 200); // 2 second period task
+//    schedulerAddTask(toggleLedBlue, 53, 200); // 2 second per3.iod task
 //    schedulerAddTask(toggleLedWhite, 54, 250); // 2.5 second period task
+
     	schedulerAddTask(fsm_manual, 50, 1);      // 50 * 10 ms = 500 ms period
-        schedulerAddTask(fsm_setting, 50, 1);     // 1 second period task
-        schedulerAddTask(fsm_automatic, 50, 1);   // 1.5 second period task
-        schedulerAddTask(getKeyInput, 55, 1); // scan button every 10 ms
+        schedulerAddTask(fsm_setting, 51, 1);     // 1 second period task
+        schedulerAddTask(fsm_automatic, 52, 1);   // 1.5 second period task
+        //schedulerAddTask(getKeyInput, 53, 10); // scan button every 10 ms
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -139,9 +140,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  schedulerDispatcher();
-    /* USER CODE BEGIN 3 */
-  }
+  schedulerDispatcher();
+//  fsm_automatic();
+//  fsm_manual();
+//  fsm_setting();
+      }
   /* USER CODE END 3 */
 }
 
@@ -316,6 +319,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	timerRun();
 	schedulerUpdate();
 	getKeyInput();
 }

@@ -26,8 +26,9 @@ Core/Src/scheduler.o: ../Core/Src/scheduler.c ../Core/Inc/scheduler.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../Core/Inc/fsm_manual.h ../Core/Inc/button.h \
- ../Core/Inc/traffic_light.h ../Core/Inc/fsm_automatic.h \
- ../Core/Inc/display7seg.h ../Core/Inc/fsm_setting.h ../Core/Inc/main.h
+ ../Core/Inc/traffic_light.h ../Core/Inc/timer.h \
+ ../Core/Inc/fsm_automatic.h ../Core/Inc/display7seg.h \
+ ../Core/Inc/fsm_setting.h ../Core/Inc/main.h
 
 ../Core/Inc/scheduler.h:
 
@@ -90,6 +91,8 @@ Core/Src/scheduler.o: ../Core/Src/scheduler.c ../Core/Inc/scheduler.h \
 ../Core/Inc/button.h:
 
 ../Core/Inc/traffic_light.h:
+
+../Core/Inc/timer.h:
 
 ../Core/Inc/fsm_automatic.h:
 

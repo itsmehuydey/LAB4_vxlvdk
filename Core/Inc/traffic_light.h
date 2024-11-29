@@ -1,5 +1,6 @@
 #include "main.h"
 #include "global.h"
+#include "timer.h"
 #include "fsm_automatic.h"
 
 

@@ -1,5 +1,5 @@
 #include "traffic_light.h"
-#include "scheduler.h"
+
 
 void clearAllLed(){
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, RESET);//RED1
@@ -27,14 +27,12 @@ void led_amber_red(){
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, SET);//RED2
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, SET);//YEL1
 }
-void init_traffic_light() {
-    // Add tasks for LED control with desired periods
-    schedulerAddTask(led_red_green, 50, 50);   // 50 * 10 ms = 500 ms period
-    schedulerAddTask(led_red_amber, 51, 100);  // 1 second period task
+void init_traffic_light(){
+	setTimer(1, 100);
 
-    // If you need more tasks, you can add them here
-    // Example: schedulerAddTask(led_green_amber, 52, 150);
-    // or any other LED function as needed.
+	clearAllLed();
+	led_red_green();
+	led_red_amber();
 }
 void controlTime_led(){
 	if(red <= 0)

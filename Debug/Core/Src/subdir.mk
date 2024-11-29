@@ -18,6 +18,7 @@ C_SRCS += \
 ../Core/Src/syscalls.c \
 ../Core/Src/sysmem.c \
 ../Core/Src/system_stm32f1xx.c \
+../Core/Src/timer.c \
 ../Core/Src/traffic_light.c 
 
 OBJS += \
@@ -34,6 +35,7 @@ OBJS += \
 ./Core/Src/syscalls.o \
 ./Core/Src/sysmem.o \
 ./Core/Src/system_stm32f1xx.o \
+./Core/Src/timer.o \
 ./Core/Src/traffic_light.o 
 
 C_DEPS += \
@@ -50,6 +52,7 @@ C_DEPS += \
 ./Core/Src/syscalls.d \
 ./Core/Src/sysmem.d \
 ./Core/Src/system_stm32f1xx.d \
+./Core/Src/timer.d \
 ./Core/Src/traffic_light.d 
 
 
